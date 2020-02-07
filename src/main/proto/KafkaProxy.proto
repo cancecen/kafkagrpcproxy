@@ -6,11 +6,20 @@ message Credentials {
     string placeHolder = 1;
 }
 
-message RegisterClientRequest {
+message RegisterProducerRequest {
     Credentials credentials = 1;
 }
 
-message RegisterClientResponse {
+message RegisterProducerResponse {
+    string clientId = 1;
+}
+
+message RegisterConsumerRequest {
+    string groupId = 1;
+    int64 partitionId = 2;
+}
+
+message RegisterConsumerResponse {
     string clientId = 1;
 }
 
@@ -19,16 +28,31 @@ message ProduceRequest {
     string messageContent = 2;
 }
 
+message ProduceResponse {
+    ResponseCode responseCode = 1;
+}
+
+message ConsumeRequest {
+    int64 partitionId = 1;
+}
+
+message ConsumeMessage {
+    int64 timestamp = 1;
+    string messageContent = 2;
+}
+
+message ConsumeResponse {
+    repeated ConsumeMessage messages = 1;
+}
+
 enum ResponseCode {
     OK = 0;
     FAILED = 1;
 }
 
-message ProduceResponse {
-    ResponseCode responseCode = 1;
-}
-
 service KafkaProxyService {
     rpc produce(ProduceRequest) returns (ProduceResponse);
-    rpc registerClient(RegisterClientRequest) returns (RegisterClientResponse);
+    rpc registerProducer(RegisterProducerRequest) returns (RegisterProducerResponse);
+    rpc registerConsumer(RegisterConsumerRequest) returns (RegisterConsumerResponse);
+    rpc consume(ConsumeRequest) returns (ConsumeResponse);
 }
