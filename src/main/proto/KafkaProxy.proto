@@ -6,11 +6,11 @@ message Credentials {
     string placeHolder = 1;
 }
 
-message RegisterProducerRequest {
+message RegisterClientRequest {
     Credentials credentials = 1;
 }
 
-message RegisterProducerResponse {
+message RegisterClientResponse {
     string clientId = 1;
 }
 
@@ -30,5 +30,5 @@ message ProduceResponse {
 
 service KafkaProxyService {
     rpc produce(ProduceRequest) returns (ProduceResponse);
-    rpc registerProducer(RegisterProducerRequest) returns (RegisterProducerResponse);
+    rpc registerClient(RegisterClientRequest) returns (RegisterClientResponse);
 }

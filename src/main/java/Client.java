@@ -10,16 +10,16 @@ import java.util.Scanner;
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 
 public class Client {
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
         ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 9999)
                 .usePlaintext()
                 .build();
         KafkaProxyServiceGrpc.KafkaProxyServiceBlockingStub stub =
                 KafkaProxyServiceGrpc.newBlockingStub(channel);
 
-        RegisterProducerResponse registerProducerResponse = stub.registerProducer(RegisterProducerRequest.newBuilder()
+        RegisterClientResponse registerClientResponse = stub.registerClient(RegisterClientRequest.newBuilder()
                 .build());
-        final String clientId = registerProducerResponse.getClientId();
+        final String clientId = registerClientResponse.getClientId();
         System.out.println("I am client: " + clientId);
 
         Metadata.Key<String> CLIENT_ID = Metadata.Key.of("clientId", ASCII_STRING_MARSHALLER);
