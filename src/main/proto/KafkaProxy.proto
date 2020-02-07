@@ -1,0 +1,34 @@
+syntax = "proto3";
+option java_multiple_files = true;
+package org.cecen.demo;
+
+message Credentials {
+    string placeHolder = 1;
+}
+
+message RegisterProducerRequest {
+    Credentials credentials = 1;
+}
+
+message RegisterProducerResponse {
+    string clientId = 1;
+}
+
+message ProduceRequest {
+    int64 timestamp = 1;
+    string messageContent = 2;
+}
+
+enum ResponseCode {
+    OK = 0;
+    FAILED = 1;
+}
+
+message ProduceResponse {
+    ResponseCode responseCode = 1;
+}
+
+service KafkaProxyService {
+    rpc produce(ProduceRequest) returns (ProduceResponse);
+    rpc registerProducer(RegisterProducerRequest) returns (RegisterProducerResponse);
+}
