@@ -17,12 +17,12 @@ public class KafkaProxyServiceImpl extends KafkaProxyServiceGrpc.KafkaProxyServi
     }
 
     @Override
-    public void registerClient(final RegisterClientRequest request,
-                                 final StreamObserver<RegisterClientResponse> responseObserver) {
+    public void registerProducer(final RegisterProducerRequest request,
+                                 final StreamObserver<RegisterProducerResponse> responseObserver) {
         final String uuid = UUID.randomUUID().toString();
         producerClientPool.put(uuid, new KafkaProducerWrapper("127.0.0.1:9092", "test"));
 
-        final RegisterClientResponse response = RegisterClientResponse.newBuilder()
+        final RegisterProducerResponse response = RegisterProducerResponse.newBuilder()
                 .setClientId(uuid)
                 .build();
         responseObserver.onNext(response);
@@ -42,4 +42,5 @@ public class KafkaProxyServiceImpl extends KafkaProxyServiceGrpc.KafkaProxyServi
         responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
+
 }

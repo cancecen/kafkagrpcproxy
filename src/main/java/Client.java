@@ -17,7 +17,7 @@ public class Client {
         KafkaProxyServiceGrpc.KafkaProxyServiceBlockingStub stub =
                 KafkaProxyServiceGrpc.newBlockingStub(channel);
 
-        RegisterClientResponse registerClientResponse = stub.registerClient(RegisterClientRequest.newBuilder()
+        RegisterProducerResponse registerClientResponse = stub.registerProducer(RegisterProducerRequest.newBuilder()
                 .build());
         final String clientId = registerClientResponse.getClientId();
         System.out.println("I am client: " + clientId);
