@@ -33,7 +33,7 @@ message ProduceResponse {
 }
 
 message ConsumeRequest {
-    int64 partitionId = 1;
+    int64 maxMessagesToReturn = 1;
 }
 
 message ConsumeMessage {
