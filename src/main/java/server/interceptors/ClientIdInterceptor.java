@@ -1,9 +1,12 @@
+package server.interceptors;
+
 import io.grpc.Context;
 import io.grpc.Contexts;
 import io.grpc.Metadata;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
+import server.constants.Constants;
 
 /** A interceptor to handle server header. */
 public class ClientIdInterceptor implements ServerInterceptor {

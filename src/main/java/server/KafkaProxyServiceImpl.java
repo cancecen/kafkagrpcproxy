@@ -1,3 +1,5 @@
+package server;
+
 import io.grpc.stub.StreamObserver;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,6 +15,9 @@ import org.cecen.demo.RegisterConsumerResponse;
 import org.cecen.demo.RegisterProducerRequest;
 import org.cecen.demo.RegisterProducerResponse;
 import org.cecen.demo.ResponseCode;
+import server.constants.Constants;
+import server.kafkautils.KafkaConsumerWrapper;
+import server.kafkautils.KafkaProducerWrapper;
 
 public class KafkaProxyServiceImpl extends KafkaProxyServiceGrpc.KafkaProxyServiceImplBase {
 
@@ -55,7 +60,7 @@ public class KafkaProxyServiceImpl extends KafkaProxyServiceGrpc.KafkaProxyServi
   public void produce(
       final ProduceRequest request, final StreamObserver<ProduceResponse> responseObserver) {
     final String clientId = Constants.CLIENT_ID_KEY.get();
-    System.out.println("Client calling me is " + clientId);
+    System.out.println("server.examples.Client calling me is " + clientId);
     final KafkaProducerWrapper producerWrapper = producerClientPool.get(clientId); // handle null
     producerWrapper.produce(
         request.getMessage().getMessageKey().getBytes(),
@@ -70,7 +75,7 @@ public class KafkaProxyServiceImpl extends KafkaProxyServiceGrpc.KafkaProxyServi
   public void consume(
       final ConsumeRequest request, final StreamObserver<ConsumeResponse> responseObserver) {
     final String clientId = Constants.CLIENT_ID_KEY.get();
-    System.out.println("Client calling me is " + clientId);
+    System.out.println("server.examples.Client calling me is " + clientId);
     final KafkaConsumerWrapper consumerWrapper =
         consumerClientPool.get(clientId); // TODO: handle null
     ConsumeResponse.Builder consumeResponseBuilder = ConsumeResponse.newBuilder();

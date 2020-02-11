@@ -1,3 +1,5 @@
+package server.kafkautils;
+
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -6,8 +8,6 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
-import org.apache.kafka.common.serialization.ByteArraySerializer;
-import org.apache.kafka.common.serialization.IntegerSerializer;
 
 public class KafkaConsumerWrapper {
   // TODO: make configurable

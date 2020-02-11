@@ -1,3 +1,5 @@
+package server.examples;
+
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 
 import io.grpc.ManagedChannel;
@@ -38,7 +40,8 @@ public class Client {
                   .setMessage(
                       KafkaMessage.newBuilder().setMessageKey("key").setMessageContent(msg).build())
                   .build());
-      System.out.println("Response from Kafka Proxy: " + response.getResponseCode().toString());
+      System.out.println(
+          "Response from Kafka server.Proxy: " + response.getResponseCode().toString());
     }
 
     channel.shutdown();

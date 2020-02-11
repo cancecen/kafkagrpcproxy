@@ -1,10 +1,11 @@
+package server.kafkautils;
+
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
-import org.apache.kafka.common.serialization.IntegerSerializer;
 
 public class KafkaProducerWrapper {
 
@@ -15,7 +16,8 @@ public class KafkaProducerWrapper {
     Map<String, Object> kafkaConfig = new HashMap<>();
     kafkaConfig.put(ProducerConfig.ACKS_CONFIG, "all");
     kafkaConfig.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, destination);
-    kafkaConfig.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
+    kafkaConfig.put(
+        ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
     kafkaConfig.put(
         ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
     this.producer = new KafkaProducer<>(kafkaConfig);
