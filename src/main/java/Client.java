@@ -5,6 +5,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 import java.util.Scanner;
+import org.cecen.demo.KafkaMessage;
 import org.cecen.demo.KafkaProxyServiceGrpc;
 import org.cecen.demo.ProduceRequest;
 import org.cecen.demo.ProduceResponse;
@@ -34,8 +35,8 @@ public class Client {
       ProduceResponse response =
           stub.produce(
               ProduceRequest.newBuilder()
-                  .setTimestamp(System.currentTimeMillis())
-                  .setMessageContent(String.valueOf(msg))
+                  .setMessage(
+                      KafkaMessage.newBuilder().setMessageKey("key").setMessageContent(msg).build())
                   .build());
       System.out.println("Response from Kafka Proxy: " + response.getResponseCode().toString());
     }

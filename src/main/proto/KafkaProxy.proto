@@ -15,8 +15,7 @@ message RegisterProducerResponse {
 }
 
 message RegisterConsumerRequest {
-    string groupId = 1;
-    int64 partitionId = 2;
+    string appId = 1;
 }
 
 message RegisterConsumerResponse {
@@ -24,8 +23,7 @@ message RegisterConsumerResponse {
 }
 
 message ProduceRequest {
-    int64 timestamp = 1;
-    string messageContent = 2;
+    KafkaMessage message = 1;
 }
 
 message ProduceResponse {
@@ -36,13 +34,14 @@ message ConsumeRequest {
     int64 maxMessagesToReturn = 1;
 }
 
-message ConsumeMessage {
+message KafkaMessage {
     int64 timestamp = 1;
-    string messageContent = 2;
+    string messageKey = 2;
+    string messageContent = 3;
 }
 
 message ConsumeResponse {
-    repeated ConsumeMessage messages = 1;
+    repeated KafkaMessage messages = 1;
 }
 
 enum ResponseCode {
