@@ -7,8 +7,7 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 
-public class KafkaProducerWrapper {
-
+public class KafkaProducerWrapper extends ClosableKafkaClient {
   private final String topic;
   private final KafkaProducer<byte[], byte[]> producer;
 
@@ -20,12 +19,15 @@ public class KafkaProducerWrapper {
         ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
     kafkaConfig.put(
         ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
+
     this.producer = new KafkaProducer<>(kafkaConfig);
     this.topic = topic;
+    this.maximumUnusedMillis = 30000L; // TODO: Make configurable
+    this.updateLastUsedMillis();
   }
 
   public void produce(byte[] key, byte[] message) {
-    producer.send(
+    this.producer.send(
         new ProducerRecord<>(this.topic, key, message),
         (metadata, e) -> {
           if (e != null) {
@@ -39,5 +41,10 @@ public class KafkaProducerWrapper {
                     + metadata.serializedValueSize());
           }
         });
+  }
+
+  @Override
+  public void close() {
+    this.producer.close();
   }
 }
