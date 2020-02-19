@@ -8,10 +8,13 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class KafkaConsumerWrapper extends ClosableKafkaClient {
   // TODO: make configurable
   private static final int POLL_FREQ_MS = 1000;
+  private static final Logger logger = LoggerFactory.getLogger(KafkaConsumerWrapper.class);
 
   private final String topic;
   private final KafkaConsumer<byte[], byte[]> consumer;

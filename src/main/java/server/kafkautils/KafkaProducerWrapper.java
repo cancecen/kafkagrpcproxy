@@ -6,8 +6,12 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class KafkaProducerWrapper extends ClosableKafkaClient {
+  private static final Logger logger = LoggerFactory.getLogger(KafkaProducerWrapper.class);
+
   private final String topic;
   private final KafkaProducer<byte[], byte[]> producer;
 
@@ -34,7 +38,7 @@ public class KafkaProducerWrapper extends ClosableKafkaClient {
             e.printStackTrace();
 
           } else {
-            System.out.println(
+            logger.info(
                 "The offset of the record we just sent is: "
                     + metadata.offset()
                     + "with size: "

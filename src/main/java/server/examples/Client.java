@@ -13,8 +13,12 @@ import org.cecen.demo.ProduceRequest;
 import org.cecen.demo.ProduceResponse;
 import org.cecen.demo.RegisterProducerRequest;
 import org.cecen.demo.RegisterProducerResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Client {
+
+  private static final Logger logger = LoggerFactory.getLogger(Client.class);
 
   public static void main(String[] args) {
     ManagedChannel channel =
@@ -25,7 +29,7 @@ public class Client {
     RegisterProducerResponse registerClientResponse =
         stub.registerProducer(RegisterProducerRequest.newBuilder().build());
     final String clientId = registerClientResponse.getClientId();
-    System.out.println("I am client: " + clientId);
+    logger.info("I am client: " + clientId);
 
     Metadata.Key<String> clientIdKey = Metadata.Key.of("clientId", ASCII_STRING_MARSHALLER);
     Metadata fixedHeaders = new Metadata();
@@ -40,8 +44,7 @@ public class Client {
                   .setMessage(
                       KafkaMessage.newBuilder().setMessageKey("key").setMessageContent(msg).build())
                   .build());
-      System.out.println(
-          "Response from Kafka server.Proxy: " + response.getResponseCode().toString());
+      logger.info("Response from Kafka server.Proxy: " + response.getResponseCode().toString());
     }
 
     channel.shutdown();

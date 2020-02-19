@@ -5,9 +5,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // TODO: Potentially separate runnable from this.
 public class ClientPool implements Runnable {
+  private Logger logger = LoggerFactory.getLogger(ClientPool.class);
   private ConcurrentHashMap<String, KafkaProducerWrapper> kafkaProducers;
   private ConcurrentHashMap<String, KafkaConsumerWrapper> kafkaConsumers;
   private ScheduledExecutorService scheduledExecutorService;
@@ -44,10 +47,10 @@ public class ClientPool implements Runnable {
   // TODO: use a concurrent LRU cache. i.e.
   // https://github.com/ben-manes/concurrentlinkedhashmap/wiki/Design
   public void run() {
-    System.out.println("Cleaning clients...");
+    logger.info("Cleaning clients...");
     for (final Map.Entry<String, KafkaConsumerWrapper> consumer : kafkaConsumers.entrySet()) {
       if (consumer.getValue().pastDeadline()) {
-        System.out.println("Consumer " + consumer.getKey() + " was past deadline, removing it.");
+        logger.info("Consumer " + consumer.getKey() + " was past deadline, removing it.");
         consumer.getValue().close();
         kafkaConsumers.remove(consumer.getKey());
       }
@@ -55,7 +58,7 @@ public class ClientPool implements Runnable {
 
     for (final Map.Entry<String, KafkaProducerWrapper> producer : kafkaProducers.entrySet()) {
       if (producer.getValue().pastDeadline()) {
-        System.out.println("Producer " + producer.getKey() + " was past deadline, removing it.");
+        logger.info("Producer " + producer.getKey() + " was past deadline, removing it.");
         producer.getValue().close();
         kafkaProducers.remove(producer.getKey());
       }

@@ -12,8 +12,11 @@ import org.cecen.demo.KafkaMessage;
 import org.cecen.demo.KafkaProxyServiceGrpc;
 import org.cecen.demo.RegisterConsumerRequest;
 import org.cecen.demo.RegisterConsumerResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConsumerClient {
+  private static final Logger logger = LoggerFactory.getLogger(ConsumerClient.class);
 
   public static void main(String[] args) {
     ManagedChannel channel =
@@ -24,7 +27,7 @@ public class ConsumerClient {
     RegisterConsumerResponse registerConsumerResponse =
         stub.registerConsumer(RegisterConsumerRequest.newBuilder().setAppId("testapp").build());
     final String clientId = registerConsumerResponse.getClientId();
-    System.out.println("I am client: " + clientId);
+    logger.info("I am client: " + clientId);
 
     Metadata.Key<String> clientIdKey = Metadata.Key.of("clientId", ASCII_STRING_MARSHALLER);
     Metadata fixedHeaders = new Metadata();
@@ -32,12 +35,12 @@ public class ConsumerClient {
     stub = MetadataUtils.attachHeaders(stub, fixedHeaders);
     while (true) {
       ConsumeResponse consumeResponse = stub.consume(ConsumeRequest.newBuilder().build());
-      System.out.println("Consumed: " + consumeResponse.getMessagesCount() + " messages");
+      logger.info("Consumed: " + consumeResponse.getMessagesCount() + " messages");
       for (KafkaMessage message : consumeResponse.getMessagesList()) {
         long ts = System.currentTimeMillis();
-        System.out.println("Msg: " + message.getMessageContent());
+        logger.info("Msg: " + message.getMessageContent());
         long latency = ts - message.getTimestamp();
-        System.out.println("Latency: " + latency);
+        logger.info("Latency: " + latency);
       }
     }
   }
