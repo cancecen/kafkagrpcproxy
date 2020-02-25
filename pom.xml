@@ -199,6 +199,16 @@
             <artifactId>log4j-over-slf4j</artifactId>
             <version>1.7.30</version>
         </dependency>
+        <dependency>
+            <groupId>com.be-hase.grpc-micrometer</groupId>
+            <artifactId>grpc-micrometer</artifactId>
+            <version>0.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+            <version>1.3.5</version>
+        </dependency>
     </dependencies>
 
 </project>
