@@ -2,6 +2,8 @@ package server;
 
 import io.grpc.stub.StreamObserver;
 import java.util.UUID;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.cecen.demo.ConsumeRequest;
 import org.cecen.demo.ConsumeResponse;
 import org.cecen.demo.KafkaMessage;
@@ -20,14 +22,16 @@ import server.kafkautils.ClientPool;
 import server.kafkautils.KafkaConsumerWrapper;
 import server.kafkautils.KafkaProducerWrapper;
 
+@Singleton
 public class KafkaProxyServiceImpl extends KafkaProxyServiceGrpc.KafkaProxyServiceImplBase {
 
   private static final Logger logger = LoggerFactory.getLogger(KafkaProxyServiceImpl.class);
 
   private ClientPool clientPool;
 
-  public KafkaProxyServiceImpl() {
-    clientPool = new ClientPool();
+  @Inject
+  public KafkaProxyServiceImpl(final ClientPool clientPool) {
+    this.clientPool = clientPool;
   }
 
   @Override
@@ -35,7 +39,7 @@ public class KafkaProxyServiceImpl extends KafkaProxyServiceGrpc.KafkaProxyServi
       final RegisterProducerRequest request,
       final StreamObserver<RegisterProducerResponse> responseObserver) {
     final String uuid = UUID.randomUUID().toString();
-    clientPool.createProducerForClient(uuid, "127.0.0.1:9092", "test");
+    clientPool.createProducerForClient(uuid, "test");
 
     final RegisterProducerResponse response =
         RegisterProducerResponse.newBuilder().setClientId(uuid).build();
@@ -48,7 +52,7 @@ public class KafkaProxyServiceImpl extends KafkaProxyServiceGrpc.KafkaProxyServi
       final RegisterConsumerRequest request,
       final StreamObserver<RegisterConsumerResponse> responseObserver) {
     final String uuid = UUID.randomUUID().toString();
-    clientPool.createConsumerForClient(uuid, "127.0.0.1:9092", "test", request.getAppId());
+    clientPool.createConsumerForClient(uuid, "test", request.getAppId());
 
     final RegisterConsumerResponse response =
         RegisterConsumerResponse.newBuilder().setClientId(uuid).build();
