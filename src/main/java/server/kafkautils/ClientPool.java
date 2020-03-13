@@ -5,19 +5,26 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import server.discovery.EndpointDiscoverer;
 
 // TODO: Potentially separate runnable from this.
+@Singleton
 public class ClientPool implements Runnable {
   private Logger logger = LoggerFactory.getLogger(ClientPool.class);
-  private ConcurrentHashMap<String, KafkaProducerWrapper> kafkaProducers;
-  private ConcurrentHashMap<String, KafkaConsumerWrapper> kafkaConsumers;
-  private ScheduledExecutorService scheduledExecutorService;
+  private final ConcurrentHashMap<String, KafkaProducerWrapper> kafkaProducers;
+  private final ConcurrentHashMap<String, KafkaConsumerWrapper> kafkaConsumers;
+  private final EndpointDiscoverer endpointDiscoverer;
+  private final ScheduledExecutorService scheduledExecutorService;
 
-  public ClientPool() {
-    kafkaProducers = new ConcurrentHashMap<>();
-    kafkaConsumers = new ConcurrentHashMap<>();
+  @Inject
+  public ClientPool(final EndpointDiscoverer endpointDiscoverer) {
+    this.kafkaProducers = new ConcurrentHashMap<>();
+    this.kafkaConsumers = new ConcurrentHashMap<>();
+    this.endpointDiscoverer = endpointDiscoverer;
     scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
     scheduledExecutorService.scheduleAtFixedRate(this, 0, 5, TimeUnit.SECONDS);
   }
@@ -31,15 +38,16 @@ public class ClientPool implements Runnable {
   }
 
   public KafkaConsumerWrapper createConsumerForClient(
-      final String clientId, final String clusterAddress, final String topic, final String appId) {
-    final KafkaConsumerWrapper newConsumer = new KafkaConsumerWrapper(clusterAddress, topic, appId);
+      final String clientId, final String topic, final String appId) {
+    final KafkaConsumerWrapper newConsumer =
+        new KafkaConsumerWrapper(topic, appId, "user_id", endpointDiscoverer);
     kafkaConsumers.put(clientId, newConsumer);
     return newConsumer;
   }
 
-  public KafkaProducerWrapper createProducerForClient(
-      final String clientId, final String clusterAddress, final String topic) {
-    final KafkaProducerWrapper newProducer = new KafkaProducerWrapper(clusterAddress, topic);
+  public KafkaProducerWrapper createProducerForClient(final String clientId, final String topic) {
+    final KafkaProducerWrapper newProducer =
+        new KafkaProducerWrapper(topic, "user_id", endpointDiscoverer);
     kafkaProducers.put(clientId, newProducer);
     return newProducer;
   }

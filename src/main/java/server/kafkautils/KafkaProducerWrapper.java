@@ -8,17 +8,22 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import server.discovery.EndpointDiscoverer;
 
 public class KafkaProducerWrapper extends ClosableKafkaClient {
   private static final Logger logger = LoggerFactory.getLogger(KafkaProducerWrapper.class);
 
   private final String topic;
   private final KafkaProducer<byte[], byte[]> producer;
+  private final EndpointDiscoverer endpointDiscoverer;
 
-  public KafkaProducerWrapper(final String destination, final String topic) {
+  public KafkaProducerWrapper(
+      final String topic, final String userId, final EndpointDiscoverer endpointDiscoverer) {
+    this.endpointDiscoverer = endpointDiscoverer;
     Map<String, Object> kafkaConfig = new HashMap<>();
     kafkaConfig.put(ProducerConfig.ACKS_CONFIG, "all");
-    kafkaConfig.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, destination);
+    kafkaConfig.put(
+        ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, endpointDiscoverer.getEndpointFor(topic, userId));
     kafkaConfig.put(
         ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
     kafkaConfig.put(

@@ -10,6 +10,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import server.discovery.EndpointDiscoverer;
 
 public class KafkaConsumerWrapper extends ClosableKafkaClient {
   // TODO: make configurable
@@ -18,12 +19,18 @@ public class KafkaConsumerWrapper extends ClosableKafkaClient {
 
   private final String topic;
   private final KafkaConsumer<byte[], byte[]> consumer;
+  private final EndpointDiscoverer endpointDiscoverer;
 
   public KafkaConsumerWrapper(
-      final String bootstrapServers, final String topic, final String appId) {
+      final String topic,
+      final String appId,
+      final String userId,
+      final EndpointDiscoverer endpointDiscoverer) {
     this.topic = topic;
+    this.endpointDiscoverer = endpointDiscoverer;
     final Map<String, Object> kafkaConfig = new HashMap<>();
-    kafkaConfig.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+    kafkaConfig.put(
+        ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, endpointDiscoverer.getEndpointFor(topic, userId));
     kafkaConfig.put(ConsumerConfig.GROUP_ID_CONFIG, appId);
     kafkaConfig.put(
         ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
