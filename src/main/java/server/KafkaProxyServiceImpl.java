@@ -4,6 +4,7 @@ import io.grpc.stub.StreamObserver;
 import java.util.UUID;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.kafkagrpcproxy.ConsumeRequest;
 import org.kafkagrpcproxy.ConsumeResponse;
 import org.kafkagrpcproxy.KafkaMessage;
@@ -52,7 +53,7 @@ public class KafkaProxyServiceImpl extends KafkaProxyServiceGrpc.KafkaProxyServi
       final RegisterConsumerRequest request,
       final StreamObserver<RegisterConsumerResponse> responseObserver) {
     final String uuid = UUID.randomUUID().toString();
-    clientPool.createConsumerForClient(uuid, "test", request.getAppId());
+    clientPool.createConsumerForClient(uuid, "test", request.getGroupId());
 
     final RegisterConsumerResponse response =
         RegisterConsumerResponse.newBuilder().setClientId(uuid).build();
@@ -68,11 +69,15 @@ public class KafkaProxyServiceImpl extends KafkaProxyServiceGrpc.KafkaProxyServi
 
     final KafkaProducerWrapper producerWrapper =
         clientPool.getProducerForClient(clientId); // handle null
-    producerWrapper.produce(
-        request.getMessage().getMessageKey().getBytes(),
-        request.getMessage().getMessageContent().getBytes());
+    final RecordMetadata kafkaResponse =
+        producerWrapper.produce(
+            request.getMessage().getMessageKey().getBytes(),
+            request.getMessage().getMessageContent().getBytes());
     final ProduceResponse response =
-        ProduceResponse.newBuilder().setResponseCode(ResponseCode.OK).build();
+        ProduceResponse.newBuilder()
+            .setResponseCode(ResponseCode.OK)
+            .setOffset(kafkaResponse.offset())
+            .build();
     responseObserver.onNext(response);
     responseObserver.onCompleted();
   }

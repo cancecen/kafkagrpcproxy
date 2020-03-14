@@ -5,6 +5,7 @@ import java.util.Map;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,9 @@ public class KafkaProducerWrapper extends ClosableKafkaClient {
   public KafkaProducerWrapper(
       final String topic, final String userId, final EndpointDiscoverer endpointDiscoverer) {
     this.endpointDiscoverer = endpointDiscoverer;
+    this.topic = topic;
+    this.maximumUnusedMillis = 30000L; // TODO: Make configurable
+
     Map<String, Object> kafkaConfig = new HashMap<>();
     kafkaConfig.put(ProducerConfig.ACKS_CONFIG, "all");
     kafkaConfig.put(
@@ -30,26 +34,16 @@ public class KafkaProducerWrapper extends ClosableKafkaClient {
         ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
 
     this.producer = new KafkaProducer<>(kafkaConfig);
-    this.topic = topic;
-    this.maximumUnusedMillis = 30000L; // TODO: Make configurable
     this.updateLastUsedMillis();
   }
 
-  public void produce(byte[] key, byte[] message) {
-    this.producer.send(
-        new ProducerRecord<>(this.topic, key, message),
-        (metadata, e) -> {
-          if (e != null) {
-            e.printStackTrace();
-
-          } else {
-            logger.info(
-                "The offset of the record we just sent is: "
-                    + metadata.offset()
-                    + "with size: "
-                    + metadata.serializedValueSize());
-          }
-        });
+  public RecordMetadata produce(byte[] key, byte[] message) {
+    try {
+      return this.producer.send(new ProducerRecord<>(this.topic, key, message)).get();
+    } catch (final Exception e) {
+      logger.error("Exception while waiting for acknowledgements: ", e);
+    }
+    return null;
   }
 
   @Override

@@ -44,7 +44,11 @@ public class Client {
                   .setMessage(
                       KafkaMessage.newBuilder().setMessageKey("key").setMessageContent(msg).build())
                   .build());
-      logger.info("Response from Kafka server.Proxy: " + response.getResponseCode().toString());
+      logger.info(
+          "Response from Kafka server.Proxy: "
+              + response.getResponseCode().toString()
+              + " "
+              + response.getOffset());
     }
 
     channel.shutdown();
