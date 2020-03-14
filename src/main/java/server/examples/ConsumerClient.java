@@ -6,12 +6,12 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
-import org.cecen.demo.ConsumeRequest;
-import org.cecen.demo.ConsumeResponse;
-import org.cecen.demo.KafkaMessage;
-import org.cecen.demo.KafkaProxyServiceGrpc;
-import org.cecen.demo.RegisterConsumerRequest;
-import org.cecen.demo.RegisterConsumerResponse;
+import org.kafkagrpcproxy.ConsumeRequest;
+import org.kafkagrpcproxy.ConsumeResponse;
+import org.kafkagrpcproxy.KafkaMessage;
+import org.kafkagrpcproxy.KafkaProxyServiceGrpc;
+import org.kafkagrpcproxy.RegisterConsumerRequest;
+import org.kafkagrpcproxy.RegisterConsumerResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
