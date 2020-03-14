@@ -3,11 +3,12 @@ option java_multiple_files = true;
 package org.kafkagrpcproxy;
 
 message Credentials {
-    string placeHolder = 1;
+    string userId = 1;
 }
 
 message RegisterProducerRequest {
     Credentials credentials = 1;
+    string topic = 2;
 }
 
 message RegisterProducerResponse {
@@ -15,7 +16,10 @@ message RegisterProducerResponse {
 }
 
 message RegisterConsumerRequest {
-    string appId = 1;
+    Credentials credentials = 1;
+    string groupId = 2;
+    string topic = 3;
+    bool autoAck = 4;
 }
 
 message RegisterConsumerResponse {
@@ -27,6 +31,15 @@ message ProduceRequest {
 }
 
 message ProduceResponse {
+    ResponseCode responseCode = 1;
+    int64 offset = 2;
+}
+
+message ProduceFastAckRequest {
+    KafkaMessage message = 1;
+}
+
+message ProduceFastAckResponse {
     ResponseCode responseCode = 1;
 }
 
@@ -51,6 +64,7 @@ enum ResponseCode {
 
 service KafkaProxyService {
     rpc produce(ProduceRequest) returns (ProduceResponse);
+    rpc produceFastAck(ProduceFastAckRequest) returns (ProduceFastAckResponse);
     rpc registerProducer(RegisterProducerRequest) returns (RegisterProducerResponse);
     rpc registerConsumer(RegisterConsumerRequest) returns (RegisterConsumerResponse);
     rpc consume(ConsumeRequest) returns (ConsumeResponse);

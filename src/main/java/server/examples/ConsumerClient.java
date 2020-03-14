@@ -25,7 +25,7 @@ public class ConsumerClient {
         KafkaProxyServiceGrpc.newBlockingStub(channel);
 
     RegisterConsumerResponse registerConsumerResponse =
-        stub.registerConsumer(RegisterConsumerRequest.newBuilder().setAppId("testapp").build());
+        stub.registerConsumer(RegisterConsumerRequest.newBuilder().setGroupId("testapp").build());
     final String clientId = registerConsumerResponse.getClientId();
     logger.info("I am client: " + clientId);
 
