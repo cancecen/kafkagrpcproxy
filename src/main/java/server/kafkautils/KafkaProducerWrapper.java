@@ -39,6 +39,7 @@ public class KafkaProducerWrapper extends ClosableKafkaClient {
 
   public RecordMetadata produce(byte[] key, byte[] message) {
     try {
+      this.updateLastUsedMillis();
       return this.producer.send(new ProducerRecord<>(this.topic, key, message)).get();
     } catch (final Exception e) {
       logger.error("Exception while waiting for acknowledgements: ", e);
