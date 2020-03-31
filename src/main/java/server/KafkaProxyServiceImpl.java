@@ -7,6 +7,7 @@ import javax.inject.Singleton;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.kafkagrpcproxy.ConsumeRequest;
 import org.kafkagrpcproxy.ConsumeResponse;
+import org.kafkagrpcproxy.GetAcksAt;
 import org.kafkagrpcproxy.KafkaMessage;
 import org.kafkagrpcproxy.KafkaProxyServiceGrpc;
 import org.kafkagrpcproxy.ProduceRequest;
@@ -69,15 +70,21 @@ public class KafkaProxyServiceImpl extends KafkaProxyServiceGrpc.KafkaProxyServi
 
     final KafkaProducerWrapper producerWrapper =
         clientPool.getProducerForClient(clientId); // handle null
-    final RecordMetadata kafkaResponse =
-        producerWrapper.produce(
-            request.getMessage().getMessageKey().getBytes(),
-            request.getMessage().getMessageContent().getBytes());
-    final ProduceResponse response =
-        ProduceResponse.newBuilder()
-            .setResponseCode(ResponseCode.OK)
-            .setOffset(kafkaResponse.offset())
-            .build();
+    final ProduceResponse response;
+    final byte[] key = request.getMessage().getMessageKey().getBytes();
+    final byte[] messageContent = request.getMessage().getMessageContent().getBytes();
+
+    if (request.getGetAcksAt().equals(GetAcksAt.CLIENT)) {
+      final RecordMetadata kafkaResponse = producerWrapper.produceAndAckClient(key, messageContent);
+      response =
+          ProduceResponse.newBuilder()
+              .setResponseCode(ResponseCode.OK)
+              .setOffset(kafkaResponse.offset())
+              .build();
+    } else {
+      producerWrapper.produceAndAckProxy(key, messageContent);
+      response = ProduceResponse.newBuilder().setResponseCode(ResponseCode.OK).build();
+    }
     responseObserver.onNext(response);
     responseObserver.onCompleted();
   }

@@ -56,7 +56,7 @@ public class AsyncProducerClient {
 
           @Override
           public void onCompleted() {
-
+              
           }
         };
 
