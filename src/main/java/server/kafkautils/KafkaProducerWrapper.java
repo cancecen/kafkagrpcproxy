@@ -15,6 +15,7 @@ public class KafkaProducerWrapper extends ClosableKafkaClient {
   private static final Logger logger = LoggerFactory.getLogger(KafkaProducerWrapper.class);
 
   private final String topic;
+  private final String userId;
   private final KafkaProducer<byte[], byte[]> producer;
   private final EndpointDiscoverer endpointDiscoverer;
 
@@ -22,7 +23,8 @@ public class KafkaProducerWrapper extends ClosableKafkaClient {
       final String topic, final String userId, final EndpointDiscoverer endpointDiscoverer) {
     this.endpointDiscoverer = endpointDiscoverer;
     this.topic = topic;
-    this.maximumUnusedMillis = 30000L; // TODO: Make configurable
+    this.userId = userId;
+    this.maximumUnusedMillis = 3000000L; // TODO: Make configurable
 
     Map<String, Object> kafkaConfig = new HashMap<>();
     kafkaConfig.put(ProducerConfig.ACKS_CONFIG, "all");
@@ -37,7 +39,7 @@ public class KafkaProducerWrapper extends ClosableKafkaClient {
     this.updateLastUsedMillis();
   }
 
-  public RecordMetadata produce(byte[] key, byte[] message) {
+  public RecordMetadata produceAndAckClient(byte[] key, byte[] message) {
     try {
       this.updateLastUsedMillis();
       return this.producer.send(new ProducerRecord<>(this.topic, key, message)).get();
@@ -45,6 +47,32 @@ public class KafkaProducerWrapper extends ClosableKafkaClient {
       logger.error("Exception while waiting for acknowledgements: ", e);
     }
     return null;
+  }
+
+  public void produceAndAckProxy(byte[] key, byte[] message) {
+    try {
+      this.updateLastUsedMillis();
+      this.producer.send(
+          new ProducerRecord<>(topic, key, message),
+          (recordMetadata, e) -> {
+            if (e != null) {
+              logger.error(
+                  "Unable to produce for topic {}, and user {} because of {}",
+                  topic,
+                  userId,
+                  e.getMessage());
+              // TODO: Metrics, retries.
+            } else {
+              logger.debug(
+                  "The offset of the record we just sent is {}, with size {}",
+                  recordMetadata.offset(),
+                  recordMetadata.serializedValueSize());
+            }
+          });
+    } catch (final Exception e) {
+      logger.error(
+          "Exception while putting record to send buffer for topic {}, reason {} ", topic, e);
+    }
   }
 
   @Override

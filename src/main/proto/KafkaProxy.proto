@@ -28,19 +28,13 @@ message RegisterConsumerResponse {
 
 message ProduceRequest {
     KafkaMessage message = 1;
+    GetAcksAt getAcksAt = 2;
 }
 
 message ProduceResponse {
     ResponseCode responseCode = 1;
     int64 offset = 2;
-}
-
-message ProduceFastAckRequest {
-    KafkaMessage message = 1;
-}
-
-message ProduceFastAckResponse {
-    ResponseCode responseCode = 1;
+    int64 timestamp = 3;
 }
 
 message ConsumeRequest {
@@ -62,9 +56,13 @@ enum ResponseCode {
     FAILED = 1;
 }
 
+enum GetAcksAt {
+    PROXY = 0; // DEFAULT
+    CLIENT = 4;
+}
+
 service KafkaProxyService {
     rpc produce(ProduceRequest) returns (ProduceResponse);
-    rpc produceFastAck(ProduceFastAckRequest) returns (ProduceFastAckResponse);
     rpc registerProducer(RegisterProducerRequest) returns (RegisterProducerResponse);
     rpc registerConsumer(RegisterConsumerRequest) returns (RegisterConsumerResponse);
     rpc consume(ConsumeRequest) returns (ConsumeResponse);
