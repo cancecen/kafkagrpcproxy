@@ -24,35 +24,40 @@ public class AckedClient {
   public static void main(String[] args) {
     ManagedChannel channel =
         ManagedChannelBuilder.forAddress("localhost", 9999).usePlaintext().build();
-    KafkaProxyServiceGrpc.KafkaProxyServiceBlockingStub stub =
-        KafkaProxyServiceGrpc.newBlockingStub(channel);
+    try {
+      KafkaProxyServiceGrpc.KafkaProxyServiceBlockingStub stub =
+          KafkaProxyServiceGrpc.newBlockingStub(channel);
 
-    RegisterProducerResponse registerClientResponse =
-        stub.registerProducer(RegisterProducerRequest.newBuilder().build());
-    final String clientId = registerClientResponse.getClientId();
-    logger.info("I am client: " + clientId);
+      RegisterProducerResponse registerClientResponse =
+          stub.registerProducer(RegisterProducerRequest.newBuilder().build());
+      final String clientId = registerClientResponse.getClientId();
+      logger.info("I am client: " + clientId);
 
-    Metadata.Key<String> clientIdKey = Metadata.Key.of("clientId", ASCII_STRING_MARSHALLER);
-    Metadata fixedHeaders = new Metadata();
-    fixedHeaders.put(clientIdKey, clientId);
-    stub = MetadataUtils.attachHeaders(stub, fixedHeaders);
-    Scanner in = new Scanner(System.in);
-    while (in.hasNextLine()) {
-      String msg = in.nextLine();
-      ProduceResponse response =
-          stub.produce(
-              ProduceRequest.newBuilder()
-                  .setMessage(
-                      KafkaMessage.newBuilder().setMessageKey("key").setMessageContent(msg).build())
-                  .setGetAcksAt(GetAcksAt.CLIENT)
-                  .build());
-      logger.info(
-          "Response from Kafka server.Proxy: "
-              + response.getResponseCode().toString()
-              + " "
-              + response.getOffset());
+      Metadata.Key<String> clientIdKey = Metadata.Key.of("clientId", ASCII_STRING_MARSHALLER);
+      Metadata fixedHeaders = new Metadata();
+      fixedHeaders.put(clientIdKey, clientId);
+      stub = MetadataUtils.attachHeaders(stub, fixedHeaders);
+      Scanner in = new Scanner(System.in);
+      while (in.hasNextLine()) {
+        String msg = in.nextLine();
+        ProduceResponse response =
+            stub.produce(
+                ProduceRequest.newBuilder()
+                    .setMessage(
+                        KafkaMessage.newBuilder()
+                            .setMessageKey("key")
+                            .setMessageContent(msg)
+                            .build())
+                    .setGetAcksAt(GetAcksAt.CLIENT)
+                    .build());
+        logger.info(
+            "Response from Kafka server.Proxy: "
+                + response.getResponseCode().toString()
+                + " "
+                + response.getOffset());
+      }
+    } finally {
+      channel.shutdown();
     }
-
-    channel.shutdown();
   }
 }

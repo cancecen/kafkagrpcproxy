@@ -29,7 +29,7 @@ public class KafkaProxyServiceImpl extends KafkaProxyServiceGrpc.KafkaProxyServi
 
   private static final Logger logger = LoggerFactory.getLogger(KafkaProxyServiceImpl.class);
 
-  private ClientPool clientPool;
+  private final ClientPool clientPool;
 
   @Inject
   public KafkaProxyServiceImpl(final ClientPool clientPool) {
@@ -71,7 +71,10 @@ public class KafkaProxyServiceImpl extends KafkaProxyServiceGrpc.KafkaProxyServi
     final KafkaProducerWrapper producerWrapper =
         clientPool.getProducerForClient(clientId); // handle null
     final ProduceResponse response;
-    final byte[] key = request.getMessage().getMessageKey().getBytes();
+    final byte[] key =
+        request.getMessage().getMessageKey() != null
+            ? request.getMessage().getMessageKey().getBytes()
+            : null;
     final byte[] messageContent = request.getMessage().getMessageContent().getBytes();
 
     if (request.getGetAcksAt().equals(GetAcksAt.CLIENT)) {
