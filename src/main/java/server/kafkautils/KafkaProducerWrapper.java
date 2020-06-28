@@ -1,12 +1,8 @@
 package server.kafkautils;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
-import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import server.discovery.EndpointDiscoverer;
@@ -16,32 +12,31 @@ public class KafkaProducerWrapper extends ClosableKafkaClient {
 
   private final String topic;
   private final String userId;
-  private final KafkaProducer<byte[], byte[]> producer;
   private final EndpointDiscoverer endpointDiscoverer;
+  private final KafkaClientFactory kafkaClientFactory;
+
+  private KafkaProducer<byte[], byte[]> producer;
+  private String endpointInUse;
 
   public KafkaProducerWrapper(
-      final String topic, final String userId, final EndpointDiscoverer endpointDiscoverer) {
+      final String topic,
+      final String userId,
+      final EndpointDiscoverer endpointDiscoverer,
+      final KafkaClientFactory kafkaClientFactory) {
     this.endpointDiscoverer = endpointDiscoverer;
     this.topic = topic;
     this.userId = userId;
     this.maximumUnusedMillis = 3000000L; // TODO: Make configurable
-
-    Map<String, Object> kafkaConfig = new HashMap<>();
-    kafkaConfig.put(ProducerConfig.ACKS_CONFIG, "all");
-    kafkaConfig.put(
-        ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, endpointDiscoverer.getEndpointFor(topic, userId));
-    kafkaConfig.put(
-        ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
-    kafkaConfig.put(
-        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
-
-    this.producer = new KafkaProducer<>(kafkaConfig);
+    this.endpointInUse = endpointDiscoverer.getEndpointFor(topic, userId);
+    this.kafkaClientFactory = kafkaClientFactory;
+    this.producer = this.kafkaClientFactory.getProducer(this.endpointInUse);
     this.updateLastUsedMillis();
   }
 
   public RecordMetadata produceAndAckClient(byte[] key, byte[] message) {
     try {
       this.updateLastUsedMillis();
+      this.updateIfNotValid();
       return this.producer.send(new ProducerRecord<>(this.topic, key, message)).get();
     } catch (final Exception e) {
       logger.error("Exception while waiting for acknowledgements: ", e);
@@ -52,6 +47,7 @@ public class KafkaProducerWrapper extends ClosableKafkaClient {
   public void produceAndAckProxy(byte[] key, byte[] message) {
     try {
       this.updateLastUsedMillis();
+      this.updateIfNotValid();
       this.producer.send(
           new ProducerRecord<>(topic, key, message),
           (recordMetadata, e) -> {
@@ -72,6 +68,15 @@ public class KafkaProducerWrapper extends ClosableKafkaClient {
     } catch (final Exception e) {
       logger.error(
           "Exception while putting record to send buffer for topic {}, reason {} ", topic, e);
+    }
+  }
+
+  private void updateIfNotValid() {
+    final String currentEndpoint = endpointDiscoverer.getEndpointFor(this.topic, this.userId);
+    if (!this.endpointInUse.equals(currentEndpoint)) {
+      this.endpointInUse = currentEndpoint;
+      this.producer.close();
+      this.producer = this.kafkaClientFactory.getProducer(this.endpointInUse);
     }
   }
 

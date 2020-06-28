@@ -14,6 +14,7 @@ import server.discovery.EndpointDiscoverer;
 import server.discovery.FileBasedEndpointDiscoverer;
 import server.interceptors.ClientIdInterceptor;
 import server.kafkautils.ClientPool;
+import server.kafkautils.KafkaClientFactory;
 
 @Module
 public class KafkaProxyModule {
@@ -26,8 +27,9 @@ public class KafkaProxyModule {
   }
 
   @Provides
-  public static ClientPool provideClientPool(final EndpointDiscoverer endpointDiscoverer) {
-    return new ClientPool(endpointDiscoverer);
+  public static ClientPool provideClientPool(
+      final EndpointDiscoverer endpointDiscoverer, final KafkaClientFactory kafkaClientFactory) {
+    return new ClientPool(endpointDiscoverer, kafkaClientFactory);
   }
 
   @Provides
@@ -53,6 +55,11 @@ public class KafkaProxyModule {
   @Provides
   public static KafkaProxyServiceImpl provideKafkaProxyServiceImp(final ClientPool clientPool) {
     return new KafkaProxyServiceImpl(clientPool);
+  }
+
+  @Provides
+  public static KafkaClientFactory kafkaClientFactory() {
+    return new KafkaClientFactory();
   }
 
   @Provides
