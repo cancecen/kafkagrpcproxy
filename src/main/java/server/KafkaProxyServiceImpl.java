@@ -41,7 +41,7 @@ public class KafkaProxyServiceImpl extends KafkaProxyServiceGrpc.KafkaProxyServi
       final RegisterProducerRequest request,
       final StreamObserver<RegisterProducerResponse> responseObserver) {
     final String uuid = UUID.randomUUID().toString();
-    clientPool.createProducerForClient(uuid, "test");
+    clientPool.createProducerForClient(uuid, "failover");
 
     final RegisterProducerResponse response =
         RegisterProducerResponse.newBuilder().setClientId(uuid).build();
@@ -54,7 +54,7 @@ public class KafkaProxyServiceImpl extends KafkaProxyServiceGrpc.KafkaProxyServi
       final RegisterConsumerRequest request,
       final StreamObserver<RegisterConsumerResponse> responseObserver) {
     final String uuid = UUID.randomUUID().toString();
-    clientPool.createConsumerForClient(uuid, "test", request.getGroupId());
+    clientPool.createConsumerForClient(uuid, "failover", request.getGroupId());
 
     final RegisterConsumerResponse response =
         RegisterConsumerResponse.newBuilder().setClientId(uuid).build();

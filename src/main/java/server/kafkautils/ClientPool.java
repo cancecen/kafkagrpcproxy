@@ -19,12 +19,15 @@ public class ClientPool implements Runnable {
   private final ConcurrentHashMap<String, KafkaConsumerWrapper> kafkaConsumers;
   private final EndpointDiscoverer endpointDiscoverer;
   private final ScheduledExecutorService scheduledExecutorService;
+  private final KafkaClientFactory kafkaClientFactory;
 
   @Inject
-  public ClientPool(final EndpointDiscoverer endpointDiscoverer) {
+  public ClientPool(
+      final EndpointDiscoverer endpointDiscoverer, final KafkaClientFactory kafkaClientFactory) {
     this.kafkaProducers = new ConcurrentHashMap<>();
     this.kafkaConsumers = new ConcurrentHashMap<>();
     this.endpointDiscoverer = endpointDiscoverer;
+    this.kafkaClientFactory = kafkaClientFactory;
     scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
     scheduledExecutorService.scheduleAtFixedRate(this, 0, 5, TimeUnit.SECONDS);
   }
@@ -47,7 +50,7 @@ public class ClientPool implements Runnable {
 
   public KafkaProducerWrapper createProducerForClient(final String clientId, final String topic) {
     final KafkaProducerWrapper newProducer =
-        new KafkaProducerWrapper(topic, "user_id", endpointDiscoverer);
+        new KafkaProducerWrapper(topic, "user_id", endpointDiscoverer, kafkaClientFactory);
     kafkaProducers.put(clientId, newProducer);
     return newProducer;
   }

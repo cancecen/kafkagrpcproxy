@@ -1,5 +1,5 @@
 topics:
-  test:
+  failover:
     user_id: 'localhost:9092'
     user_id2: 'localhost:9093'
   test2:
