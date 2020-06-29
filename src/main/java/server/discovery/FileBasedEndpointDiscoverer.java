@@ -22,7 +22,7 @@ public class FileBasedEndpointDiscoverer implements EndpointDiscoverer {
   private final WatchService watchService;
   private final Thread fileWatcher;
   private ObjectMapper objectMapper;
-  private FileBasedEndpoints fileBasedEndpoints;
+  private ClusterEndpoints endpoints;
 
   @Inject
   public FileBasedEndpointDiscoverer(final Path pathToWatch, final String filename) {
@@ -56,13 +56,13 @@ public class FileBasedEndpointDiscoverer implements EndpointDiscoverer {
 
   @Override
   public String getEndpointFor(String topic, String userId) {
-    return fileBasedEndpoints.getEndpointFor(topic, userId);
+    return endpoints.getEndpointFor(topic, userId);
   }
 
   private synchronized void updateFile() {
     try {
       objectMapper = new ObjectMapper(new YAMLFactory());
-      fileBasedEndpoints = objectMapper.readValue(pathToLoad.toFile(), FileBasedEndpoints.class);
+      endpoints = objectMapper.readValue(pathToLoad.toFile(), ClusterEndpoints.class);
     } catch (final IOException ex) {
       throw new RuntimeException("Error while loading the endpoint file: ", ex);
     }

@@ -2,16 +2,20 @@ package server.modules;
 
 import com.be_hase.grpc.micrometer.GrpcMetricsConfigure;
 import com.be_hase.grpc.micrometer.MicrometerServerInterceptor;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import dagger.Module;
 import dagger.Provides;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.ServerInterceptors;
 import io.micrometer.core.instrument.Metrics;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import server.KafkaProxyServiceImpl;
+import server.discovery.ClusterEndpoints;
 import server.discovery.EndpointDiscoverer;
-import server.discovery.FileBasedEndpointDiscoverer;
+import server.discovery.ZookeeperEndpointDiscoverer;
 import server.interceptors.ClientIdInterceptor;
 import server.kafkautils.ClientPool;
 import server.kafkautils.KafkaClientFactory;
@@ -21,9 +25,17 @@ public class KafkaProxyModule {
 
   @Provides
   public static EndpointDiscoverer provideFileBasedEndpointDiscoverer() {
-    return new FileBasedEndpointDiscoverer(
-        Paths.get("target/resources/cluster-coordinates").toAbsolutePath(),
-        "cluster-coordinates.yaml");
+    final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+    final Path bootstrapPath = Paths.get("target/resources/cluster-coordinates").toAbsolutePath();
+    final String bootstrapFile = "cluster-coordinates.yaml";
+    try {
+      final ClusterEndpoints initialEndpoints =
+          objectMapper.readValue(
+              Paths.get(bootstrapPath.toString(), bootstrapFile).toFile(), ClusterEndpoints.class);
+      return new ZookeeperEndpointDiscoverer("localhost:2181", initialEndpoints);
+    } catch (final Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Provides
